@@ -65,3 +65,24 @@ def simulated_annealing(spectrum, kmax, max_temp, cooling_factor, samples, num_r
             map.append((T, s_current))
 
     return best_energy, best_state, map
+
+def log_transform(x):
+    """Applies a logarithmic transformation to the input array."""
+    return np.log(x + 1e-12)  # Adding a small constant to avoid log(0)
+
+def flatten_SA_map(map, spectrum_length, samples_per_pixel, function=(lambda x: x)):
+    """Flattens the SA map into a 2D array for easier plotting."""
+
+    new_length = spectrum_length // samples_per_pixel
+    flattened_map = np.zeros(new_length)
+
+    for i in range(len(map)):
+        T, s = map[i]
+        flattened_map[s // samples_per_pixel] += 1  # Ensure s is within spectrum length
+
+    flattened_map[flattened_map == 0] = 1
+    
+    # Normalize the flattened map for better visualization
+    flattened_map = function(flattened_map)
+    
+    return flattened_map

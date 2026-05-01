@@ -43,3 +43,21 @@ def generateCurve(parameters, number_of_peaks, resolution, noise_sigma):
         y += addWhiteNoiseRandom(x, y, noise_sigma)
 
     return x, y, params
+
+def print_params(params, precision=4):
+    if not params:
+        print("No parameters to display.")
+        return
+
+    # Header
+    print(f"{'Peak':<6} {'Center':<12} {'Amplitude':<12} {'Gamma':<12}")
+    print("-" * 44)
+
+    # Rows
+    for p in params:
+        print(
+            f"{p['peak_id']:<6} "
+            f"{p['center']:<12.{precision}f} "
+            f"{p['amplitude']:<12.{precision}f} "
+            f"{p['gamma']:<12.{precision}f}"
+        )
