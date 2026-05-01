@@ -31,3 +31,37 @@ def print_peak_params(params):
         print(f"{p['peak_id']:<10} | {p['center']:<12.4f} | {p['amplitude']:<12.4f} | {p['gamma']:<12.4f}")
 
     print(separator + "\n")
+
+def simulated_annealing(spectrum, kmax, max_temp, cooling_factor, samples, num_repetitions):
+    map = []
+
+    best_state = None
+    best_energy = -np.inf
+
+    for i in range(num_repetitions):
+
+        s_current = np.random.randint(0, len(spectrum)-1)
+        energy_current = spectrum[s_current]
+        T = max_temp
+
+        for j in range(kmax):
+            #T = max_temp * (1 - (j + 1) / kmax)
+            T = T/((cooling_factor)**(1/kmax))
+            #if T < 1e-12: break
+
+            for k in range(samples):
+                s_new = np.random.randint(0, len(spectrum)-1)
+                energy_new = spectrum[s_new]
+
+                diff = energy_new - energy_current
+                if diff > 0 or np.random.random() < np.exp(diff / max(T, 1e-12)):
+                    s_current = s_new
+                    energy_current = energy_new
+
+                    if energy_current > best_energy:
+                        best_energy = energy_current
+                        best_state = s_current
+
+            map.append((T, s_current))
+
+    return best_energy, best_state, map
