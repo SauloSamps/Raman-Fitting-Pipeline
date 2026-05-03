@@ -34,9 +34,9 @@ def generateCurve(parameters, number_of_peaks, resolution, noise_sigma):
         })
 
     # Normalization
-    max_y = np.max(y)
-    if max_y > 1:
-        y /= max_y
+    #max_y = np.max(y)
+    #if max_y > 1:
+    #    y /= max_y
 
     # Add noise
     if noise_sigma > 0:
