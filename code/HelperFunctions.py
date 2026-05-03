@@ -63,7 +63,8 @@ def simulated_annealing(spectrum, kmax, max_temp, cooling_factor, samples, num_r
                         best_state = s_current
 
             map.append((T, s_current))
-
+    print(f'Number of samples generated: {len(map)}')
+    
     return best_energy, best_state, map
 
 def log_transform(x):
@@ -75,14 +76,42 @@ def flatten_SA_map(map, spectrum_length, samples_per_pixel, function=(lambda x: 
 
     new_length = spectrum_length // samples_per_pixel
     flattened_map = np.zeros(new_length)
+    max_temperature = max(map, key=lambda x: x[1])[1]
 
     for i in range(len(map)):
         T, s = map[i]
-        flattened_map[s // samples_per_pixel] += 1  # Ensure s is within spectrum length
+        flattened_map[s // samples_per_pixel] += 1/T
 
-    flattened_map[flattened_map == 0] = 1
+    flattened_map[flattened_map == 0] = np.median(flattened_map)
     
     # Normalize the flattened map for better visualization
     flattened_map = function(flattened_map)
     
     return flattened_map
+
+def downsample_and_normalize(spectrum):
+    """
+    Downsamples and normalizes spectra into the standard 100 pixel resolution. 
+    Downsampling helps reduce noise signatures.
+    Additionally places the spectrum into the amplitude range of 0,1.
+    """
+    size = len(spectrum)
+    
+    factor = size/100
+    output = np.zeros(100)
+
+    accum = 0
+    idx = 0
+    
+    for i in range(1, size + 1):
+        
+        accum += spectrum[i-1]
+        
+        if (i%(np.ceil(factor)) == 0):
+            output[idx] = accum/(np.ceil(factor))
+            accum = 0
+            idx += 1
+            
+    output = output/max(output)
+    return output
+    
