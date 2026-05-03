@@ -6,7 +6,7 @@ import h5py
 def generate_dataset(num_curves, parameters, resolution, noise_range, num_peaks_range, filename="dataset.h5"):
 
     noise_range = np.linspace(noise_range[0], noise_range[1], 100)
-    num_peaks_range = list(range(num_peaks_range[0], num_peaks_range[1]))
+    num_peaks_range = list(range(num_peaks_range[0], num_peaks_range[1] + 1))
 
     samples = num_curves // (len(noise_range) * len(num_peaks_range))
     total_samples = samples * len(noise_range) * len(num_peaks_range)
