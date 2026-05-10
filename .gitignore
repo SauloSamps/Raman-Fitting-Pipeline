@@ -1,3 +1,8 @@
 venv/
 .ipynb_checkpoints/
 __pycache__/
+code/training_data/
+code/curve_parameters.csv
+code/curve_summary.csv
+code/surface_data/
+code/outputs/

@@ -1,62 +1,106 @@
-from RamanModel import *
-from HelperFunctions import *
+# CODE TO GENERATE A SYNTHETIC RAMAN DATASET FOR NEURAL NETWORK TRAINING
+
 import numpy as np
 import h5py
+import json
+import itertools
+from RamanModel import generateCurve
+from HelperFunctions import downsample_and_normalize
 
-def generate_dataset(num_curves, parameters, resolution, noise_range, num_peaks_range, filename="dataset.h5"):
+def generate_raman_dataset(n, peak_counts, noise_sigmas, parameters, resolution, filename="raman_training.h5"):
+    """
+    Generates a balanced dataset of Raman curves and saves them to an HDF5 file.
+    
+    Args:
+        n (int): Total number of curves to generate.
+        peak_counts (list): List of possible number of peaks (e.g., [1, 2, 3]).
+        noise_sigmas (list): List of noise standard deviations (e.g., [0.01, 0.05]).
+        parameters (dict): The range parameters for centers, amplitudes, and gammas.
+        resolution (int): The number of points in each curve.
+        filename (str): The name of the output HDF5 file.
+    """
+    # 1. Calculate combinations and distribution for balance
+    combinations = list(itertools.product(peak_counts, noise_sigmas))
+    num_combinations = len(combinations)
+    
+    # Calculate samples per combination
+    samples_per_combo = n // num_combinations
+    remainder = n % num_combinations
+    
+    # Distribute the total n samples (handling the remainder if n is not divisible)
+    samples_distribution = [samples_per_combo + (1 if i < remainder else 0) for i in range(num_combinations)]
+    
+    # 2. Data Containers
+    all_y = []
+    all_peak_params = []
+    all_num_peaks = []
+    x_values_shared = None
 
-    noise_range = np.linspace(noise_range[0], noise_range[1], 100)
-    num_peaks_range = list(range(num_peaks_range[0], num_peaks_range[1] + 1))
+    print(f"Generating balanced dataset of {n} curves...")
+    current_idx = 0
+    # 3. Generate Curves
+    for (num_peaks, sigma), count in zip(combinations, samples_distribution):
+        for _ in range(count):
+            print(f"Generating curve {current_idx} of {n} (Peaks: {num_peaks}, Sigma: {sigma})...", end="\r", flush=True)
+            current_idx += 1
 
-    samples = num_curves // (len(noise_range) * len(num_peaks_range))
-    total_samples = samples * len(noise_range) * len(num_peaks_range)
+            x, y, params = generateCurve(parameters, num_peaks, resolution, sigma)
+            y = downsample_and_normalize(y, resolution) # Normalization only
+            
+            # Save x values only once
+            if x_values_shared is None:
+                x_values_shared = x
+            
+            all_y.append(y)
+            all_num_peaks.append(num_peaks)
+            # Parameters are saved as JSON strings to maintain structure in HDF5
+            all_peak_params.append(json.dumps(params))
 
-    # Preallocate datasets
-    spectra = np.zeros((total_samples, 100))
-    peak_counts = np.zeros(total_samples, dtype=np.int32)
-    noise_levels = np.zeros(total_samples, dtype=np.float32)
+    # Convert to numpy arrays
+    all_y = np.array(all_y)
+    all_num_peaks = np.array(all_num_peaks)
 
-    with h5py.File(filename, "w") as f:
-        spectra_ds = f.create_dataset("spectra", data=spectra)
-        peaks_ds = f.create_dataset("num_peaks", data=peak_counts)
-        noise_ds = f.create_dataset("noise", data=noise_levels)
+    # 4. Save to HDF5
+    with h5py.File(filename, 'w') as hf:
+        # Save shared x values
+        hf.create_dataset("x_values", data=x_values_shared)
+        
+        # Save intensities (y values)
+        hf.create_dataset("y_values", data=all_y)
+        
+        # Save number of peaks per curve
+        hf.create_dataset("num_peaks", data=all_num_peaks)
+        
+        # Save peak parameters as variable-length strings (JSON formatted)
+        dt = h5py.special_dtype(vlen=str)
+        ds_params = hf.create_dataset("peak_parameters", (n,), dtype=dt)
+        ds_params[:] = all_peak_params
 
-        params_group = f.create_group("parameters")
+    print(f"Successfully saved dataset to '{filename}'.")
 
-        idx = 0
-
-        for num_peaks in num_peaks_range:
-            for noise in noise_range:
-                for _ in range(samples):
-
-                    _, y, params = generateCurve(parameters, num_peaks, resolution, noise)
-                    y_ds = downsample_and_normalize(y)
-
-                    # Store main data
-                    spectra_ds[idx] = y_ds
-                    peaks_ds[idx] = num_peaks
-                    noise_ds[idx] = noise
-
-                    # Store detailed parameters (optional, but useful)
-                    sample_group = params_group.create_group(f"sample_{idx}")
-
-                    for peak in params:
-                        peak_id = peak["peak_id"]
-                        peak_group = sample_group.create_group(f"peak_{peak_id}")
-
-                        peak_group.attrs["center"] = peak["center"]
-                        peak_group.attrs["amplitude"] = peak["amplitude"]
-                        peak_group.attrs["gamma"] = peak["gamma"]
-
-                    idx += 1
-
-    print(f"Dataset saved to {filename} with {total_samples} samples.")
-
-parameters = {
+# --- Example Usage ---
+peak_counts_list = [1, 2, 3, 4, 5]
+noise_list = np.linspace(0.01, 0.5, num=50)
+raman_params = {
     "center_range": (0.1, 0.9),
-    "amplitude_range": (0.1, 1),
-    "gamma_range": (0.001, 0.05),
+    "amplitude_range": (0.1, 1.0),
+    "gamma_range": (0.01, 0.05),
     "x_min": 0,
     "x_max": 1
-}
-generate_dataset(num_curves=10000, parameters=parameters, resolution=1876, noise_range=(0.01, 0.6), num_peaks_range=(1, 5), filename="dataset.h5")
+ }
+ 
+generate_raman_dataset(n=20000, 
+                        peak_counts=peak_counts_list, 
+                        noise_sigmas=noise_list, 
+                        parameters=raman_params, 
+                        resolution=1000,
+                        filename="training_data/raman_training.h5"
+                        )
+
+generate_raman_dataset(n=2000, 
+                        peak_counts=peak_counts_list, 
+                        noise_sigmas=noise_list, 
+                        parameters=raman_params, 
+                        resolution=1000,
+                        filename="training_data/raman_test.h5"
+                        )
