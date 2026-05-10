@@ -89,7 +89,7 @@ def flatten_SA_map(map, spectrum_length, samples_per_pixel, function=(lambda x: 
     
     return flattened_map
 
-def downsample_and_normalize(spectrum):
+def downsample_and_normalize(spectrum, resolution=100):
     """
     Downsamples and normalizes spectra into the standard 100 pixel resolution. 
     Downsampling helps reduce noise signatures.
@@ -97,8 +97,8 @@ def downsample_and_normalize(spectrum):
     """
     size = len(spectrum)
     
-    factor = size/100
-    output = np.zeros(100)
+    factor = size/resolution
+    output = np.zeros(resolution)
 
     accum = 0
     idx = 0
@@ -114,4 +114,39 @@ def downsample_and_normalize(spectrum):
             
     output = output/max(output)
     return output
+
+def create_probability_map(spectrum, resolution = 50):
+    """
+    Generates the probability map for use in the KNN algorithm.
+    It downsamples the spectrum and then performs area normalization.
+    The return value is like a probability density funtion.
+    """
+    spectrum = downsample_and_normalize(spectrum, resolution)
+    spectrum = list(map(lambda x: max(0, x), spectrum))
+    spectrum = spectrum/sum(spectrum)
+
+    return spectrum
+
+def position_probability_map(probability_map, initial_resolution = 1876):
+    """
+    Outputs a position range given the probability of peak positions generated
+    by the probability map.
+    """
+    resolution = len(probability_map)
+    
+    shift_per_pixel = 1/initial_resolution
+    scaling_factor = np.floor(initial_resolution/resolution)
+    
+    index = np.random.choice(resolution, p=probability_map)
+    lower_bound = int(index * scaling_factor)
+    upper_bound = int(lower_bound + (scaling_factor - 1))
+
+    x_range = np.linspace(0, 1, initial_resolution)
+    interval = x_range[lower_bound : upper_bound]
+
+    return (interval[0], interval[-1])
+
+    
+    
+    
     
