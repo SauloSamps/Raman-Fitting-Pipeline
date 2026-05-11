@@ -146,6 +146,32 @@ def position_probability_map(probability_map, initial_resolution = 1876):
 
     return (interval[0], interval[-1])
 
+import numpy as np
+
+def shift_axis(spectrum, resolution=200):
+    """
+    Shifts the spectrum to the y-axis, such that the new curve represents the number of
+    times a horizontal line intersects the original curve.
+    """
+    spec = np.asarray(spectrum)
+    
+    step = 1 / resolution
+    start = step / 2
+    y_axis_lines = np.arange(start, 1, step)
+    counts = np.zeros(len(y_axis_lines))
+
+    # We look at each adjacent pair of points in the spectrum
+    # A horizontal line 'h' intersects the segment between spec[i] and spec[i+1]
+    
+    y_min = np.minimum(spec[:-1], spec[1:])
+    y_max = np.maximum(spec[:-1], spec[1:])
+
+    for i, h in enumerate(y_axis_lines):
+        # A line at height 'h' intersects a segment if y_min < h <= y_max
+        counts[i] = np.sum((y_min < h) & (y_max >= h))
+        
+    return counts
+
     
     
     

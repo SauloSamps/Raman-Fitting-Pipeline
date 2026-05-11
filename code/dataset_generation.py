@@ -78,7 +78,8 @@ def generate_raman_dataset(n, peak_counts, noise_sigmas, parameters, resolution,
 
     print(f"Successfully saved dataset to '{filename}'.")
 
-# --- Example Usage ---
+# EXECUTION BLOCK TO GENERATE TRAINING AND TEST DATASETS
+
 peak_counts_list = [1, 2, 3, 4, 5]
 noise_list = np.linspace(0.01, 0.5, num=50)
 raman_params = {
