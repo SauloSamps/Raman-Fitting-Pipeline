@@ -6,3 +6,5 @@ code/curve_parameters.csv
 code/curve_summary.csv
 code/surface_data/
 code/outputs/
+code/real_examples
+code/real_examples/*
