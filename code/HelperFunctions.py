@@ -2,6 +2,10 @@ import numpy as np
 import heapq
 
 def euclidean_distance(y1, y2):
+    """
+    Calculates the Euclidean distance between two points.
+    """
+
     return np.sqrt(np.sum((y1 - y2)**2))
 
 def get_param_distance(p1, p2, ranges):
@@ -33,6 +37,12 @@ def print_peak_params(params):
     print(separator + "\n")
 
 def simulated_annealing(spectrum, kmax, max_temp, cooling_factor, samples, num_repetitions):
+    """
+    Creates a map of likely peak positions by recording posisitons and temperatures. This can be later
+    flattened to produce a probability map. This function is likely deprecated in favor of less computationally
+    expensive approaches.
+    """
+
     map = []
 
     best_state = None
@@ -115,7 +125,7 @@ def downsample_and_normalize(spectrum, resolution=100):
     output = output/max(output)
     return output
 
-def create_probability_map(spectrum, resolution = 50):
+def create_probability_map2(spectrum, resolution = 50):
     """
     Generates the probability map for use in the KNN algorithm.
     It downsamples the spectrum and then performs area normalization.
@@ -126,6 +136,49 @@ def create_probability_map(spectrum, resolution = 50):
     spectrum = spectrum/sum(spectrum)
 
     return spectrum
+
+
+def create_probability_map(spectrum, num_peaks, resolution=50):
+    """
+    Generates a probability map where no single bin exceeds 1/num_peaks.
+    """
+    spectrum = downsample_and_normalize(spectrum, resolution)
+    prob_map = np.maximum(0, spectrum)
+    
+    if np.sum(prob_map) > 0:
+        prob_map = prob_map / np.sum(prob_map)
+    else:
+        return prob_map
+
+    ceiling = 1.0 / num_peaks
+    
+    for _ in range(resolution):
+        over_limit_mask = prob_map > ceiling
+        if not np.any(over_limit_mask):
+            break
+            
+        # Calculate excess probability
+        excess = np.sum(prob_map[over_limit_mask] - ceiling)
+        
+        # Cap the bins that were over the limit
+        prob_map[over_limit_mask] = ceiling
+        
+        # Find bins that can still "absorb" probability (those under the limit)
+        under_limit_mask = prob_map < ceiling
+        
+        if np.any(under_limit_mask):
+            under_limit_sum = np.sum(prob_map[under_limit_mask])
+            if under_limit_sum > 0:
+                # Add excess weighted by the existing distribution
+                prob_map[under_limit_mask] += (prob_map[under_limit_mask] / under_limit_sum) * excess
+            else:
+                # If everything else is 0, distribute uniformly among under-limit bins
+                prob_map[under_limit_mask] += excess / np.sum(under_limit_mask)
+        else:
+            # Fallback: if all bins are capped, the map is uniform
+            break
+
+    return prob_map
 
 def position_probability_map(probability_map, initial_resolution = 1876):
     """
@@ -146,7 +199,6 @@ def position_probability_map(probability_map, initial_resolution = 1876):
 
     return (interval[0], interval[-1])
 
-import numpy as np
 
 def shift_axis(spectrum, resolution=200):
     """
