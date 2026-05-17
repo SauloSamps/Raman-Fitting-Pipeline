@@ -7,6 +7,12 @@ def addWhiteNoiseRandom(xData, yData, factor):
     y_noisy = yData + np.random.normal(0, factor, len(xData))
     return y_noisy
 
+def addNoiseSNR(yData, SNR):
+    signal_power = np.sum(yData**2) / len(yData)
+    noise_power = np.sqrt(signal_power / SNR)
+    y_noisy = yData + np.random.normal(0, noise_power, len(yData))
+    return y_noisy, noise_power
+
 def generateCurve(parameters, number_of_peaks, resolution, noise_sigma):
     center_params = parameters["center_range"]
     amplitude_params = parameters["amplitude_range"]

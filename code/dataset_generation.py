@@ -90,7 +90,7 @@ raman_params = {
     "x_max": 1
  }
  
-generate_raman_dataset(n=20000, 
+generate_raman_dataset(n=50000, 
                         peak_counts=peak_counts_list, 
                         noise_sigmas=noise_list, 
                         parameters=raman_params, 
@@ -98,7 +98,7 @@ generate_raman_dataset(n=20000,
                         filename="training_data/raman_training.h5"
                         )
 
-generate_raman_dataset(n=2000, 
+generate_raman_dataset(n=5000, 
                         peak_counts=peak_counts_list, 
                         noise_sigmas=noise_list, 
                         parameters=raman_params, 
