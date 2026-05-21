@@ -81,15 +81,17 @@ def generate_raman_dataset(n, peak_counts, noise_sigmas, parameters, resolution,
 # EXECUTION BLOCK TO GENERATE TRAINING AND TEST DATASETS
 
 peak_counts_list = [1, 2, 3, 4, 5]
+#peak_counts_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 noise_list = np.linspace(0.01, 0.5, num=50)
 raman_params = {
     "center_range": (0.1, 0.9),
-    "amplitude_range": (0.1, 1.0),
-    "gamma_range": (0.01, 0.05),
+    "amplitude_range": (0.01, 1.0),
+    "gamma_range": (0.001, 0.05),
     "x_min": 0,
     "x_max": 1
  }
- 
+
+"""
 generate_raman_dataset(n=50000, 
                         peak_counts=peak_counts_list, 
                         noise_sigmas=noise_list, 
@@ -99,6 +101,23 @@ generate_raman_dataset(n=50000,
                         )
 
 generate_raman_dataset(n=5000, 
+                        peak_counts=peak_counts_list, 
+                        noise_sigmas=noise_list, 
+                        parameters=raman_params, 
+                        resolution=1000,
+                        filename="training_data/raman_test.h5"
+                        )
+"""
+
+generate_raman_dataset(n=100000, 
+                        peak_counts=peak_counts_list, 
+                        noise_sigmas=noise_list, 
+                        parameters=raman_params, 
+                        resolution=1000,
+                        filename="training_data/raman_training.h5"
+                        )
+
+generate_raman_dataset(n=10000, 
                         peak_counts=peak_counts_list, 
                         noise_sigmas=noise_list, 
                         parameters=raman_params, 
