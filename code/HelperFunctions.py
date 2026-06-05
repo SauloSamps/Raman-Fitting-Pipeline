@@ -1,12 +1,15 @@
 import numpy as np
 import heapq
+from numba import njit
 
+@njit(fastmath=True)
 def euclidean_distance(y1, y2):
     """
     Calculates the Euclidean distance between two points.
     """
-
-    return np.sqrt(np.sum((y1 - y2)**2))
+    #return np.sqrt(np.sum((y1 - y2)**2))
+    diff = y1 - y2
+    return np.dot(diff, diff)
 
 def get_param_distance(p1, p2, ranges):
     """
@@ -178,26 +181,36 @@ def create_probability_map(spectrum, num_peaks, resolution=50):
             # Fallback: if all bins are capped, the map is uniform
             break
 
-    return prob_map
+    #return prob_map
+    return np.cumsum(prob_map)
 
-def position_probability_map(probability_map, initial_resolution = 1876):
+#def position_probability_map(probability_map, initial_resolution = 1876):
+@njit
+def position_probability_map(cdf, x_range):
     """
     Outputs a position range given the probability of peak positions generated
     by the probability map.
     """
-    resolution = len(probability_map)
+    #resolution = len(probability_map)
+    resolution = len(cdf)
     
-    shift_per_pixel = 1/initial_resolution
-    scaling_factor = np.floor(initial_resolution/resolution)
+    #shift_per_pixel = 1/initial_resolution
+    #scaling_factor = np.floor(initial_resolution/resolution)
+    scaling_factor = len(x_range)//resolution
     
-    index = np.random.choice(resolution, p=probability_map)
-    lower_bound = int(index * scaling_factor)
-    upper_bound = int(lower_bound + (scaling_factor - 1))
+    #index = np.random.choice(resolution, p=probability_map)
+    r = np.random.random()
+    index = np.searchsorted(cdf, r)
+    
+    lower_bound = index * scaling_factor
+    upper_bound = lower_bound + scaling_factor - 1
 
-    x_range = np.linspace(0, 1, initial_resolution)
-    interval = x_range[lower_bound : upper_bound]
+    #x_range = np.linspace(0, 1, initial_resolution)
 
-    return (interval[0], interval[-1])
+    pixel = np.random.randint(lower_bound, upper_bound)
+
+    #return (x_range[lower_bound], x_range[upper_bound])
+    return x_range[pixel]
 
 
 def shift_axis(spectrum, resolution=200):

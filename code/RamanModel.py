@@ -1,7 +1,12 @@
 import numpy as np
+from numba import njit
 
+@njit(fastmath=True)
 def lorentzian(x, x0, gamma, maximum):
-    return maximum / (1 + ((x - x0) / gamma)**2)
+    x = np.asarray(x)
+    gamma_sq = gamma ** 2
+    #return maximum / (1.0 + ((x - x0) / gamma)**2)
+    return (maximum * gamma_sq) / (gamma_sq + (x - x0)**2)
 
 def addWhiteNoiseRandom(xData, yData, factor):
     y_noisy = yData + np.random.normal(0, factor, len(xData))

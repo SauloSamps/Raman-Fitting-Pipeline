@@ -179,7 +179,6 @@ def generate_raman_dataset_noise_skewed(n, peak_counts, noise_dict, parameters, 
 # EXECUTION BLOCK TO GENERATE TRAINING AND TEST DATASETS
 
 peak_counts_list = [1, 2, 3, 4, 5]
-#peak_counts_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 noise_list = np.linspace(0.01, 0.5, num=50)
 raman_params = {
     "center_range": (0.1, 0.9),
@@ -233,6 +232,8 @@ noise_config = {
 }
 
 # Generate datasets using the new dictionary-based noise categories
+
+
 generate_raman_dataset_noise_skewed(n=50000, 
                         peak_counts=peak_counts_list, 
                         noise_dict=noise_config, 
@@ -241,7 +242,8 @@ generate_raman_dataset_noise_skewed(n=50000,
                         filename="training_data/raman_training.h5"
                         )
 
-generate_raman_dataset(n=5000, 
+
+generate_raman_dataset(n=10000, 
                         peak_counts=peak_counts_list, 
                         noise_sigmas=noise_list, 
                         parameters=raman_params, 
