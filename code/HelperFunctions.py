@@ -21,6 +21,7 @@ def get_param_distance(p1, p2, ranges):
     d_c = (p1['center'] - p2['center']) / (ranges['center_range'][1] - ranges['center_range'][0])
     d_a = (p1['amplitude'] - p2['amplitude']) / (ranges['amplitude_range'][1] - ranges['amplitude_range'][0])
     d_g = (p1['gamma'] - p2['gamma']) / (ranges['gamma_range'][1] - ranges['gamma_range'][0])
+    
     return np.sqrt(d_c**2 + d_a**2 + d_g**2)
 
 def print_peak_params(params):
