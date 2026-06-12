@@ -83,7 +83,7 @@ class SLMK_CNN_PeakClassifier(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-def predict_top_k_peaks(spectrum, model, use_savgol=True, device="cuda", top_k=3):
+def predict_top_k_peaks(spectrum, model, use_savgol=True, device="cpu", top_k=3):
     """
     Predicts the top K most likely peak counts for a single raw spectrum.
     
