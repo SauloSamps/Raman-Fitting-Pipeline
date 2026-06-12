@@ -19,6 +19,20 @@ def addNoiseSNR(yData, SNR):
     return y_noisy, noise_power
 
 def generateCurve(parameters, number_of_peaks, resolution, noise_sigma):
+    """
+    Generates a raman curve with a specified number of peaks and a set of parameters. They
+    must be structured as a dictionary like this:
+
+    params = {
+        "center_range": (c0, c1)
+        "amplitude_range": (a0, a1)
+        "gamma_range": (g0, g1)
+        "x_min": 0 - typically
+        "x_max": 1 - typically
+    }
+
+    The curve will be normalized to have max amplitude = 1
+    """
     center_params = parameters["center_range"]
     amplitude_params = parameters["amplitude_range"]
     gamma_params = parameters["gamma_range"]

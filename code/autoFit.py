@@ -31,6 +31,7 @@ def _fit_worker(num_peaks, samples, base_parameters, target_x, target_y, k, roun
             "num_peaks": num_peaks,
             "chisqr": float(best_fit_result.chisqr),
             "best_values": best_fit_result.best_values,  # Dictionary of optimized parameters
+            "bic": float(best_fit_result.bic),
             "fitted_values": best_fit_result.best_fit.tolist(),  # Best fit y-curve array
             "success": True
         }
@@ -43,7 +44,7 @@ def _fit_worker(num_peaks, samples, base_parameters, target_x, target_y, k, roun
         
     output_queue.put(worker_output)
 
-def autoFit(target_x, target_y, base_parameters, model_path="model.pth", num_classes=5, samples=1000, k=5, rounds=3, eps=0.15):
+def autoFit(target_x, target_y, base_parameters, model_path="model_5_peaks.pth", num_classes=5, samples=1000, k=5, rounds=3, eps=0.15):
     """
     Main pipeline function:
     1. Runs the target spectrum through the CNN to identify the top 3 most likely peak counts.
@@ -90,9 +91,14 @@ def autoFit(target_x, target_y, base_parameters, model_path="model.pth", num_cla
     #print("All fitting processes have concluded and rejoined the main loop.")
     
     # --- Step 4: Final Selection Logic ---
-    # Left blank as requested for your future evaluation rules
-    best_overall_result = None
+    # We're gonna use the Bayesian Information Criterion to select the best result (lowest val)
+    successful_fits = [f for f in results_list if f["success"]]
     
-    # TODO: Put selection logic here using fields in results_list (e.g., comparing 'chisqr')
+    if not successful_fits:
+        print("Error: All parallel fitting paths failed.")
+        return None
+
+    # Find the result block with the absolute lowest BIC value
+    best_overall_result = min(successful_fits, key=lambda x: x["bic"])
     
     return best_overall_result
