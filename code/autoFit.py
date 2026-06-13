@@ -1,3 +1,4 @@
+import os
 import torch
 import numpy as np
 from multiprocessing import Process, Queue
@@ -44,7 +45,7 @@ def _fit_worker(num_peaks, samples, base_parameters, target_x, target_y, k, roun
         
     output_queue.put(worker_output)
 
-def autoFit(target_x, target_y, base_parameters, model_path="model_5_peaks.pth", num_classes=5, samples=1000, k=5, rounds=3, eps=0.15):
+def autoFit(target_x, target_y, base_parameters, model_path="models/model_5_peaks.pth", num_classes=5, samples=1000, k=5, rounds=3, eps=0.15):
     """
     Main pipeline function:
     1. Runs the target spectrum through the CNN to identify the top 3 most likely peak counts.
@@ -52,11 +53,23 @@ def autoFit(target_x, target_y, base_parameters, model_path="model_5_peaks.pth",
     3. Aggregates results back into a single process.
     """
     device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    current_file_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # 2. Check if the user passed a relative path, and make it absolute if so
+    if not os.path.isabs(model_path):
+        resolved_model_path = os.path.join(current_file_dir, model_path)
+    else:
+        resolved_model_path = model_path
+
+    # Double check if the file is actually resolved correctly
+    if not os.path.exists(resolved_model_path):
+        raise FileNotFoundError(f"Dynamic path resolution failed. Target file not found at: '{resolved_model_path}'")
     
     # --- Step 1: Neural Network Inference ---
     # Instantiate the multi-scale CNN classifier architecture
     model = SLMK_CNN_PeakClassifier(input_length=len(target_y), num_classes=num_classes)
-    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.load_state_dict(torch.load(resolved_model_path, map_location=device))
     model.to(device)
     
     # Predict the top 3 most likely peak counts
