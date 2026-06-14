@@ -129,6 +129,32 @@ def downsample_and_normalize(spectrum, resolution=100):
     output = output/max(output)
     return output
 
+def downsample_and_normalize_both(x_spectrum, y_spectrum, resolution=1000):
+    size = len(y_spectrum)
+    
+    # Create the output arrays
+    output_x = np.zeros(resolution)
+    output_y = np.zeros(resolution)
+    
+    # Calculate exact window bounds for chunking
+    for idx in range(resolution):
+        start_idx = int(idx * size / resolution)
+        end_idx = int((idx + 1) * size / resolution)
+        
+        # Prevent empty slices and average the chunk
+        if start_idx == end_idx: 
+            end_idx += 1
+            
+        output_x[idx] = np.mean(x_spectrum[start_idx:end_idx])
+        output_y[idx] = np.mean(y_spectrum[start_idx:end_idx])
+        
+    # Min-max or Peak normalization (using peak matching your original code)
+    max_y = np.max(output_y)
+    if max_y != 0:
+        output_y = output_y / max_y
+        
+    return output_x, output_y
+
 def create_probability_map2(spectrum, resolution = 50):
     """
     Generates the probability map for use in the KNN algorithm.
