@@ -179,7 +179,7 @@ def generate_raman_dataset_noise_skewed(n, peak_counts, noise_dict, parameters, 
 # EXECUTION BLOCK TO GENERATE TRAINING AND TEST DATASETS
 
 peak_counts_list = [1, 2, 3, 4, 5]
-noise_list = np.linspace(0.01, 0.5, num=50)
+noise_list = np.linspace(0.01, 0.5, num=6)
 raman_params = {
     "center_range": (0.1, 0.9),
     "amplitude_range": (0.01, 1.0),
@@ -234,6 +234,7 @@ noise_config = {
 # Generate datasets using the new dictionary-based noise categories
 
 
+"""
 generate_raman_dataset_noise_skewed(n=50000, 
                         peak_counts=peak_counts_list, 
                         noise_dict=noise_config, 
@@ -242,11 +243,34 @@ generate_raman_dataset_noise_skewed(n=50000,
                         filename="training_data/raman_training.h5"
                         )
 
+"""
 
-generate_raman_dataset(n=10000, 
+
+generate_raman_dataset(n=300, 
                         peak_counts=peak_counts_list, 
                         noise_sigmas=noise_list, 
                         parameters=raman_params, 
                         resolution=1000,
-                        filename="training_data/raman_test.h5"
+                        filename="training_data/pipeline_test.h5"
                         )
+
+
+
+"""
+generate_raman_dataset_noise_skewed(n=100000, 
+                        peak_counts=peak_counts_list, 
+                        noise_dict=noise_config, 
+                        parameters=raman_params, 
+                        resolution=1000,
+                        filename="training_data/raman_training_10_peaks.h5"
+                        )
+
+
+generate_raman_dataset(n=20000, 
+                        peak_counts=peak_counts_list, 
+                        noise_sigmas=noise_list, 
+                        parameters=raman_params, 
+                        resolution=1000,
+                        filename="training_data/raman_test_10_peaks.h5"
+                        )
+"""
