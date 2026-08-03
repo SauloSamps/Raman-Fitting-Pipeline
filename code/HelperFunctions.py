@@ -264,6 +264,27 @@ def shift_axis(spectrum, resolution=200):
         
     return counts
 
+
+def calc_noise(spectrum):
+
+    """
+    Returns an approximation of the noise standard deviation of a spectrum. Includes a
+    implicitly defined gaussian function to be fitted.
+    """
+
+    def gaussian(x, amplitude, mean, sigma):
+        return amplitude * np.exp(-((x - mean) ** 2) / (2 * sigma**2))
+        
+    median = np.median(spectrum)
+    mask = spectrum <= median
+
+    sub_median = spectrum[mask]
+    counts, bin_edges = np.histogram(sub_median, bins=30)
+    midpoints = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+    popt, pcov = curve_fit(gaussian, midpoints, counts, p0=[max(counts), np.mean(sub_median), np.std(sub_median)])
+    
+    return abs(popt[2])
+
     
     
     
