@@ -1,6 +1,7 @@
 import numpy as np
 import heapq
 from numba import njit
+from scipy.optimize import curve_fit
 
 @njit(fastmath=True)
 def euclidean_distance(y1, y2):
@@ -78,6 +79,49 @@ def simulated_annealing(spectrum, kmax, max_temp, cooling_factor, samples, num_r
 
             map.append((T, s_current))
     print(f'Number of samples generated: {len(map)}')
+    
+    return best_energy, best_state, map
+
+
+def simulated_annealingV2(spectrum, length, kmax, max_temp, cooling_factor, samples, num_repetitions):
+    """
+    Creates a map of likely peak positions by recording posisitons and temperatures. This can be later
+    flattened to produce a probability map. This function is likely deprecated in favor of less computationally
+    expensive approaches.
+    """
+
+    map = []
+
+    best_state = None
+    best_energy = -np.inf
+    cool = cooling_factor ** (1 / kmax)
+
+    for i in range(num_repetitions):
+
+        s_current = np.random.randint(0, length-1)
+        energy_current = spectrum[s_current]
+        T = max_temp
+
+        for j in range(kmax):
+            #T = T/((cooling_factor)**(1/kmax))
+            T /= cool
+            invT = 1.0 / max(T, 1e-12)
+            
+            for k in range(samples):
+                s_new = np.random.randint(0, length-1)
+                energy_new = spectrum[s_new]
+
+                diff = energy_new - energy_current
+                if diff > 0 or np.random.random() < np.exp(diff * invT):
+                    s_current = s_new
+                    energy_current = energy_new
+
+                    if energy_current > best_energy:
+                        best_energy = energy_current
+                        best_state = s_current
+
+            map.append((T, s_current))
+    #print(f'Number of samples generated: {len(map)}')
     
     return best_energy, best_state, map
 
