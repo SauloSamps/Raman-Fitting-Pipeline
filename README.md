@@ -5,3 +5,4 @@ The paper related to this code served as a final university project and it is no
 
 [Read the paper (PDF)](https://saulosamps.github.io/Raman-Fitting-Pipeline/paper.pdf)
 
+To run tests with the code base shell/bash commands are available. They simply install the required Python packages as an env and run jupyter notebook. 
